@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>First House · Regent console</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <div>
+        <p class="eyebrow">FIRST HOUSE / DEVELOPMENT</p>
+        <h1>Regent console</h1>
+      </div>
+      <p class="boundary">
+        Live boundary: no House execution attached.<br />Rehearsals complete ·
+        no canonical House has been born.
+      </p>
+    </header>
+    <p id="error" role="alert" hidden></p>
+    <main>
+      <nav aria-label="History">
+        <h2>Recorded history</h2>
+        <label
+          >Find a record<input
+            id="search"
+            type="search"
+            placeholder="Title, path, participant…"
+        /></label>
+        <label
+          >Participant history<select id="participant">
+            <option value="">Everyone & shared sources</option>
+          </select></label
+        >
+        <p class="muted">
+          Documentary reading order. Parallel contributions have no verified
+          speech order.
+        </p>
+        <div id="history"></div>
+      </nav>
+      <section class="reader" aria-label="Original record">
+        <div class="toolbar">
+          <button id="previous">← Previous</button
+          ><button id="next">Next →</button
+          ><label
+            >Text size<select id="size">
+              <option value="normal">Normal</option>
+              <option value="large">Large</option>
+              <option value="larger">Larger</option>
+            </select></label
+          ><button id="download">Download original</button>
+        </div>
+        <p class="eyebrow">READING POSITION / ORIGINAL TEXT</p>
+        <h2 id="title">Loading history…</h2>
+        <p id="metadata" class="muted"></p>
+        <details>
+          <summary>Record reference & provenance</summary>
+          <p id="reference"></p>
+          <p>
+            Participant links follow the earlier documentary reader. They do not
+            establish authorship or recipients. The original text and linked
+            manifests preserve what was recorded; they are not complete
+            invocation contexts.
+          </p>
+          <div id="manifests"></div>
+        </details>
+        <pre id="original"></pre>
+      </section>
+      <section class="conversation" aria-label="Private operator conversation">
+        <div class="toolbar">
+          <h2>Our conversation</h2>
+          <button id="connect">Connect Codex</button>
+        </div>
+        <p class="muted">
+          Private discussion with Codex. A separate thread from the host
+          session. Messages stay outside inhabitants’ correspondence and
+          context.
+        </p>
+        <p id="status" role="status"></p>
+        <p id="thread" class="muted"></p>
+        <div
+          id="messages"
+          aria-live="polite"
+          aria-relevant="additions text"
+        ></div>
+        <form id="composer">
+          <label for="message">Message to Codex</label
+          ><textarea
+            id="message"
+            rows="4"
+            maxlength="32000"
+            placeholder="Ask about the record we’re reading…"
+          ></textarea>
+          <p id="attachment" class="muted"></p>
+          <div class="toolbar">
+            <button id="send" type="submit" disabled>
+              Send with selected original</button
+            ><button id="interrupt" type="button" disabled>
+              Stop response
+            </button>
+          </div>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

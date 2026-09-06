@@ -1,0 +1,8 @@
+# DRAFT / UNRATIFIED — descriptive fixture, not ratified office canon
+status: DRAFT / UNRATIFIED
+id: dev:office:steward
+name: Disposable development Steward
+fixture: true
+capabilities:
+  - artifact.write
+note: No canonical member or office is commissioned by this file.

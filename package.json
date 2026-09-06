@@ -1,0 +1,28 @@
+{
+  "name": "first-house-prebirth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "packageManager": "pnpm@12.0.0",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "pnpm build && node --test dist/tests/*.test.js",
+    "format": "prettier --write src tests docs canon fixtures AGENTS.md README.md package.json tsconfig.json migrations .prettierrc.json",
+    "format:check": "prettier --check src tests docs canon fixtures AGENTS.md README.md package.json tsconfig.json migrations .prettierrc.json",
+    "demo": "pnpm build && node dist/src/cli/main.js demo",
+    "console": "pnpm build && node dist/src/console/server.js",
+    "test:console-browser": "pnpm build && node tests/console-browser.mjs",
+    "commission": "pnpm build && node dist/src/cli/main.js commission",
+    "cli": "node dist/src/cli/main.js",
+    "check": "pnpm format:check && pnpm typecheck && pnpm test"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "prettier": "^3.6.0",
+    "typescript": "^5.9.0"
+  }
+}
