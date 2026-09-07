@@ -7,6 +7,16 @@ truthfully. This milestone builds the software needed to investigate that idea.
 is a disposable development fixture, including actors whose test lifecycle is
 `active`. None is a canonical House member.
 
+The immediate development priority is **independent real-world operation**: live
+model reasoning, durable execution, external tools and correspondence, and a wallet
+with explicit spending authority. First House is fundamentally "AI with a wallet"
+as well as an experiment in mythic agency. Build the shortest working operational
+path, with the mythic experiment continuing alongside it. See
+[current project direction](docs/PROJECT_INTENT.md#immediate-priority-independent-operation).
+These are next-milestone targets; the implemented bootstrap is described below.
+The [milestone sequence](docs/INDEPENDENT_OPERATION_MILESTONES.md) lays out the
+path from the current substrate to sustained independent operation.
+
 A central premise is that agents can inherit a mythos that guides their attention
 and judgment through the world in ways analogous to how mythos guides humans.
 Software tests can establish reliable mechanics; they cannot settle that full

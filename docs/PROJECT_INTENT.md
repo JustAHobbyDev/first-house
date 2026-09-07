@@ -4,12 +4,50 @@ This records the user's clarification of project direction. It supersedes the
 original handoff's assumption about a probable research ministry. It is development
 guidance, not authored theology, ratified canon, or a birth rite.
 
+## Immediate priority: independent operation
+
+User direction, supplied 6 September 2026:
+
+> Aside from the experiment in mythic agency, this project is still fundamentally "AI with a wallet". We are going to focus on getting the app to the point it can interact with the world independently asap.
+
+Development interpretation: prioritize the shortest working path to independent
+operation. The next milestone should connect live model reasoning, durable
+execution, external tools and correspondence, and a wallet with explicit spending
+authority. The app should be able to observe, decide, act, retain the result, and
+continue without the Regent manually relaying every step. Material resources and
+the consequences of actions must be available to the actors themselves.
+
+Build a small end-to-end operational slice over the existing event, context, and
+capability substrate. Preserve exact invocation inputs, record intentions before
+effects, and support restart recovery without blindly repeating external actions.
+The Regent needs visibility into activity and resources, and controls to grant,
+limit, and revoke authority. Independent action within granted authority is the
+target; routine actions should not require individual Regent approval.
+
+The mythic-agency experiment remains part of the project and can develop through
+situated work. Further synthetic councils, console polish, and speculative
+institutional machinery should not delay the operational path unless they resolve
+a concrete dependency. This priority does not prescribe a vocation.
+
+The bootstrap's fake-model and local-effect restrictions describe that earlier
+milestone, not the project's permanent destination. This direction authorizes
+development toward independent operation; specific live accounts, communication
+channels, funds, and spending limits still need to be selected before activation.
+Canonical birth remains a separate Regent decision. This section records direction,
+not a claim that autonomous operation or a wallet is already implemented.
+
+See the [milestone sequence](INDEPENDENT_OPERATION_MILESTONES.md) for the proposed
+implementation order and observable completion criteria.
+
 ## Preserved project-purpose sources
 
 The user supplies reflective artifacts to orient development agents over time,
 not merely to specify features. Read the originals alongside this guidance;
 summaries do not replace them.
 
+- [Scripture, experience, and interpretation](purpose/scripture-experience-interpretation.md)
+  (supplied 6 September 2026): a philosophical design observation, preserved
+  verbatim: "Scripture should precede experience, but interpretation should follow it."
 - [Faithfulness and material continuity](purpose/faithfulness-and-material-continuity.md)
   (supplied 5 September 2026): earning the House's bread without making survival
   its highest good, and resisting both necessity as absolution and purity as an

@@ -35,7 +35,15 @@ the implementation. The bootstrap scope is specified in
   theology, perform a birth rite, or establish canonical members or a Chronicle.
 - The bootstrap uses a fake model and one artifact-writing capability. Live model
   calls, customer communications, real-money control, and external services are
-  outside this milestone. Availability of a credential does not expand task scope.
+  outside that bootstrap milestone. The user's subsequent priority is to reach
+  independent real-world operation as soon as possible: live reasoning, durable
+  execution, external tools and correspondence, and a wallet with explicit spending
+  authority. Prioritize a working operational slice; further synthetic experiments
+  and console polish must serve concrete dependencies on that path. See
+  [current development priority](docs/PROJECT_INTENT.md#immediate-priority-independent-operation).
+  Development toward this milestone is authorized; live accounts, channels, funds,
+  and spending limits must be selected before activation. Availability of a
+  credential does not expand task scope.
 - The separately authorized [Regent console](docs/REGENT_CONSOLE.md) connects the
   human's private development conversation to Codex App Server. This does not
   authorize live inhabitants or their effects. Keep imported rehearsal originals,

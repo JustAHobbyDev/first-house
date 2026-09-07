@@ -92,3 +92,25 @@ direction for future observation.
 User's wording:
 
 > possible tendency observed under heavily synthetic information conditions; monitor for recurrence once actors have genuine opportunities to verify facts.
+
+### 11. Prioritize independent real-world operation
+
+Recorded 6 September 2026. Status: standing development priority; operational
+implementation remains pending.
+
+User's wording:
+
+> Aside from the experiment in mythic agency, this project is still fundamentally "AI with a wallet". We are going to focus on getting the app to the point it can interact with the world independently asap.
+
+Development interpretation is recorded separately in
+[project intent](PROJECT_INTENT.md#immediate-priority-independent-operation).
+
+### 12. Scripture, experience, and interpretation
+
+Recorded 6 September 2026. Status: philosophical design observation.
+
+User's wording:
+
+> Scripture should precede experience, but interpretation should follow it.
+
+Preserved as a [project-purpose source](purpose/scripture-experience-interpretation.md).
