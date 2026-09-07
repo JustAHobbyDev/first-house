@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import { loadHistory } from "./history.js";
 import { ConsoleSession } from "./session.js";
 import { object } from "./rpc.js";
+import { HouseExperiment } from "./house.js";
 
 interface TailnetAccess {
   origin: string;
@@ -59,6 +60,7 @@ export async function startConsole(
     token?: string;
     assets?: string;
     tailnet?: TailnetAccess;
+    house?: HouseExperiment;
   } = {},
 ) {
   const tailnet = options.tailnet ? tailnetAccess(options.tailnet) : undefined;
@@ -71,7 +73,12 @@ export async function startConsole(
   const blocked = new Set<ServerResponse>();
   const dirty = new Set<ServerResponse>();
   let origin = "";
-  const snapshot = () => JSON.stringify(session.state);
+  const state = () => ({
+    ...session.state,
+    revision: session.state.revision + (options.house?.state.revision ?? 0),
+    ...(options.house ? { house: options.house.state } : {}),
+  });
+  const snapshot = () => JSON.stringify(state());
   const push = (stream: ServerResponse) => {
     if (blocked.has(stream)) {
       dirty.add(stream);
@@ -88,6 +95,7 @@ export async function startConsole(
   session.onChange = () => {
     for (const stream of streams) push(stream);
   };
+  if (options.house) options.house.onChange = session.onChange;
   const server = createServer((request, response) => {
     void (async () => {
       response.setHeader("Cache-Control", "no-store");
@@ -128,7 +136,26 @@ export async function startConsole(
       const staticFiles: Record<string, [string, string]> = {
         "/": ["index.html", "text/html"],
         "/app.js": ["app.js", "text/javascript"],
+        "/reader.js": ["reader.js", "text/javascript"],
+        "/controls.js": ["controls.js", "text/javascript"],
+        "/house.js": ["house.js", "text/javascript"],
         "/style.css": ["style.css", "text/css"],
+        "/fonts/source-sans-3-regular.ttf": [
+          "fonts/source-sans-3-regular.ttf",
+          "font/ttf",
+        ],
+        "/fonts/source-sans-3-semibold.ttf": [
+          "fonts/source-sans-3-semibold.ttf",
+          "font/ttf",
+        ],
+        "/fonts/ibm-plex-mono-regular.ttf": [
+          "fonts/ibm-plex-mono-regular.ttf",
+          "font/ttf",
+        ],
+        "/fonts/ibm-plex-mono-medium.ttf": [
+          "fonts/ibm-plex-mono-medium.ttf",
+          "font/ttf",
+        ],
       };
       const asset = staticFiles[url.pathname];
       if (request.method === "GET" && asset) {
@@ -155,7 +182,15 @@ export async function startConsole(
       }
       try {
         if (request.method === "GET" && url.pathname === "/api/state") {
-          json(200, session.state);
+          json(200, state());
+          return;
+        }
+        if (
+          request.method === "GET" &&
+          url.pathname === "/api/house/context" &&
+          options.house
+        ) {
+          json(200, options.house.context);
           return;
         }
         if (request.method === "GET" && url.pathname === "/api/history") {
@@ -190,11 +225,17 @@ export async function startConsole(
           else if (url.pathname === "/api/message")
             await session.submit(value.text, value.recordId);
           else if (url.pathname === "/api/interrupt") await session.interrupt();
+          else if (url.pathname === "/api/house/start" && options.house)
+            options.house.start();
+          else if (url.pathname === "/api/house/message" && options.house)
+            options.house.submit(value.text, value.recipients);
+          else if (url.pathname === "/api/house/stop" && options.house)
+            options.house.stop();
           else {
             json(404, { error: "Unknown action" });
             return;
           }
-          json(200, session.state);
+          json(200, state());
           return;
         }
         json(404, { error: "Not found" });
@@ -226,6 +267,7 @@ export async function startConsole(
         server.close((error) => (error ? reject(error) : resolve())),
       );
       session.close();
+      options.house?.close();
     },
   };
 }
@@ -237,13 +279,18 @@ if (
   const root = process.cwd();
   const directory = resolve(root, "var/dev-regent-console");
   let session: ConsoleSession | undefined;
+  let house: HouseExperiment | undefined;
   try {
     const accessFile = join(directory, "tailnet.json");
     const tailnet = existsSync(accessFile)
       ? tailnetAccess(JSON.parse(readFileSync(accessFile, "utf8")))
       : undefined;
     session = new ConsoleSession(loadHistory(root), root, directory);
-    const app = await startConsole(session, tailnet ? { tailnet } : {});
+    house = new HouseExperiment(root, join(directory, "house-test"));
+    const app = await startConsole(session, {
+      house,
+      ...(tailnet ? { tailnet } : {}),
+    });
     const launch = join(directory, "open-console.html");
     writeFileSync(
       launch,
@@ -268,6 +315,7 @@ if (
     process.on("SIGTERM", stop);
   } catch (error) {
     session?.close();
+    house?.close();
     console.error(error instanceof Error ? error.message : "Console failed");
     process.exitCode = 1;
   }

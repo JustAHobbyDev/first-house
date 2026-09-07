@@ -218,7 +218,12 @@ test("a single console owns its store; restart resumes only its own thread and r
         status: "completed",
         items: [
           {
-            id: "assistant-1",
+            id: "item-1",
+            type: "userMessage",
+            clientId: f.session.state.messages[0]!.id,
+          },
+          {
+            id: "item-2",
             type: "agentMessage",
             text: "Complete stored answer",
           },
@@ -255,6 +260,75 @@ test("a single console owns its store; restart resumes only its own thread and r
     }
   } finally {
     rmSync(f.directory, { recursive: true, force: true });
+  }
+});
+
+test("resume repairs legacy duplicate replies without collapsing repeated answers across items or turns", async () => {
+  const f = setup();
+  try {
+    await f.session.connect();
+    // Legacy state had no turn metadata, and appended synthetic history IDs
+    // beside the original streamed message IDs after a reconnect.
+    f.session.state.messages = [
+      { id: "question-1", role: "Regent", text: "First question" },
+      { id: "msg_first", role: "Codex", text: "Same answer" },
+      { id: "activity", role: "Activity", text: "Codex: history read" },
+      { id: "msg_second", role: "Codex", text: "Same answer" },
+      { id: "item-2", role: "Codex", text: "Same answer" },
+      { id: "item-3", role: "Codex", text: "Same answer" },
+      { id: "question-2", role: "Regent", text: "Second question" },
+      { id: "msg_third", role: "Codex", text: "Same answer" },
+      { id: "item-2", role: "Codex", text: "Same answer" },
+    ];
+    f.rpc.turns = [1, 2].map((number) => ({
+      id: `turn-${number}`,
+      status: "completed",
+      items: [
+        { id: "item-1", type: "userMessage", clientId: `question-${number}` },
+        { id: "item-2", type: "agentMessage", text: "Same answer" },
+        ...(number === 1
+          ? [{ id: "item-3", type: "agentMessage", text: "Same answer" }]
+          : []),
+      ],
+    }));
+    const expectedIds = [
+      "question-1",
+      "msg_first",
+      "activity",
+      "msg_second",
+      "question-2",
+      "msg_third",
+    ];
+    for (let attempt = 0; attempt < 2; attempt++) {
+      f.rpc.close();
+      await f.session.connect();
+      assert.deepEqual(
+        f.session.state.messages.map((message) => message.id),
+        expectedIds,
+      );
+      assert.equal(
+        f.session.state.messages.filter((message) => message.role === "Codex")
+          .length,
+        3,
+      );
+    }
+    // Late completion notifications using either form of the ID update the
+    // existing reply and cannot confuse item-2 from two different turns.
+    for (const id of ["item-2", "msg_third"]) {
+      f.rpc.onNotification("item/completed", {
+        threadId: "console-test-thread",
+        turnId: "turn-2",
+        item: { type: "agentMessage", id, text: "Updated answer" },
+      });
+    }
+    assert.deepEqual(
+      f.session.state.messages.map((message) => message.id),
+      expectedIds,
+    );
+    assert.equal(f.session.state.messages[1]!.text, "Same answer");
+    assert.equal(f.session.state.messages.at(-1)!.text, "Updated answer");
+  } finally {
+    f.cleanup();
   }
 });
 

@@ -1,9 +1,52 @@
 # Regent web console
 
 The console is a local development surface for the human Regent to read preserved
-history and converse privately with a Codex assistant. No canonical House has been
-born. The House runtime still uses its fake adapter. This separate operator
-integration does not invoke inhabitants or enter correspondence into their context.
+history, converse privately with a Codex assistant, and participate as Regent in
+the separately authorized interactive House test. No canonical House has been
+born. The House runtime still uses its fake adapter. The private Codex conversation
+remains separate from the Claude member conversations described below.
+
+## Interactive House test
+
+Select **House test** in the conversation panel. **Start members** launches one
+headless Claude process each for Steward, Witness, and Dreamer. The Regent opens
+the new situation in the message box. **Responders** selects all three or one
+member; each send runs one turn for the selected members, with no automatic next
+round. Ctrl/Command+Enter sends. **Stop** ends the member processes.
+
+All test statements are shared correspondence. A member receives the statements
+it has not yet been shown when its next turn starts. Members selected together
+receive the same round boundary; their replies become available to one another
+on a subsequent turn. Choosing a responder is not a private-message function.
+No model runs merely from reading, selecting records, or opening a panel.
+
+Each member begins with the exact preserved creation myth, visibly DRAFT /
+UNRATIFIED. The custom system prompt supplies its development identity, the
+human's Regent role, the JSON transport, and the boundary that it speaks only
+for itself and has no tools or real-world effects. It contains no interpretation
+of the myth or situation. Prior test outcomes, purpose essays, facilitator
+summaries, archive selections, and private Codex chat are not inserted. The
+original source and hash can be downloaded under **Context and participants**.
+
+Claude runs with `-p --input-format stream-json --output-format stream-json
+--verbose --safe-mode --tools '' --disable-slash-commands` and the explicit custom
+system prompt. Each process has its own directory and session. Safe mode disables
+project instructions, hooks, plugins, memories, and inherited MCP configurations.
+These are separate conversations, not OS-isolated identities or an independent
+Witness authority. The console displays final response text, not hidden reasoning.
+
+The separate `var/dev-regent-console/house-test/experiment.sqlite` records source
+bytes, system prompts, exact submitted JSON strings, provider results, public
+statements, and starts/stops. Inputs are committed before any member call. Stored
+events have update/delete guards; this is a local development record without
+independent custody or the runtime's hash-chain guarantees. It is not a Chronicle.
+Claude also needs write access to its own session storage under `~/.claude`.
+
+Completed conversations can resume using their own saved Claude session IDs.
+An interrupted, failed, or otherwise uncertain turn blocks automatic continuation
+and is never resent. The transcript and pending input remain available for
+inspection; outcome recovery is not yet automated. Reloading the browser retains
+the transcript and selected conversation tab without invoking members.
 
 ## Run locally
 
@@ -58,6 +101,25 @@ access continues to require the private launch token.
 
 ## Reading together
 
+The interface follows the Regent console template in the user-supplied
+`RegnetConsoleRedesign.zip`: a light reading surface, collapsible side panels,
+floating controls, and a compact status bar. Details remain in the provenance
+disclosure. Its Source Sans 3 and IBM Plex Mono fonts are served locally.
+The design's example prose, simulated statuses, copied databases, and access files
+are not imported into the application.
+
+Keyboard controls outside text fields: **F** toggles records, **C** toggles Codex,
+**← / →** select the previous/next record, **T** cycles text size, and **.** hides
+or reveals the reading dock. The dock hides while scrolling down and returns when
+scrolling up; pin it to keep it visible. On small screens, records and chat open
+as drawers; Escape closes them. **?** opens a floating shortcut reference; press
+**?** again or Escape to close it. Ctrl/Command+Enter sends from the composer.
+
+Markdown originals use a limited display renderer for headings, paragraphs,
+emphasis, code, lists, quotes, tables, and links. Source HTML is rendered as text,
+and images are not fetched. The provenance disclosure offers **Show source text**;
+downloads and chat attachments continue to use the exact original bytes/text.
+
 The history pane reuses source and participant mappings from the two existing
 documentary readers. It loads all 66 originals from the archived First Council and
 The Promise and the Door rehearsals. Source paths and content are preserved;
@@ -75,9 +137,9 @@ checks establishes independent custody or complete model context.
 The reading position is shared across authenticated browser tabs and Codex's
 `house_history` tool. That tool can list, read, and select known records. Moving the
 selection does not start a model turn, change House history, or execute effects.
-The live boundary is displayed separately: no House execution is attached, and
-both imported rehearsals are complete. There is no House pause/continue control,
-regeneration, branching, or token-level debugger in this slice.
+Both imported rehearsals are complete. The separate live House-test status reports
+the new Claude experiment; it does not change the archived history. There is no
+runtime replay/branching or token-level debugger in this slice.
 
 Sending explicitly includes the user's exact message and the selected original's
 full text, source ID, path, and SHA-256. The console records those exact inputs
@@ -94,7 +156,8 @@ this database does not claim the House event store's append-only guarantees.
 Submission and transcript persistence share a transaction before invocation.
 
 Codex also persists its own thread history. Reconnecting resumes the stored thread
-and reconciles assistant messages by item ID, including a final response missed
+and reconciles assistant messages within their original submission and turn,
+including a final response missed
 while disconnected. A running stored turn blocks a second submission. Stop response
 uses `turn/interrupt`; stopping a response does not undo prior activity.
 

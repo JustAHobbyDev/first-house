@@ -44,8 +44,23 @@ the implementation. The bootstrap scope is specified in
   authorized private tailnet access through Tailscale Serve with an exact Regent
   identity allowlist. Public exposure and a persistent backend service have not
   been authorized.
+- Follow the supplied Regent console redesign for its reading interface. Keep
+  visible explanatory notes minimal; put provenance and scope details in
+  disclosures rather than repeating them around the working surface.
+- The user authorized an interactive, noncanonical House tension test through the
+  Regent Console with independent headless Claude processes for Steward, Witness,
+  and Dreamer. The human participates as Regent and introduces a new situation.
+  Give members the original creation myth and actual shared correspondence;
+  do not add facilitator interpretations, purpose-essay coaching, suggested
+  judgments, or the host/private Codex conversation. Keep exact inputs and results
+  in the separate development experiment record. This authorizes model replies,
+  not canonical birth, external communications, tools, or real-world effects.
 - Preserve existing work. The root `PROBLEM_FRAMES.md` concerns a different genome
   harness; it is not First House runtime policy or canon.
+- During the interactive test session, keep the user's design notes in
+  [the running notes](docs/REGENT_CONSOLE_DESIGN_NOTES.md). Preserve their wording
+  and distinguish notes from implementation. Do not inject these development
+  notes into member prompts or the House conversation.
 - Do not commit, push, or deploy unless the user requests it.
 
 ## Mission discovery and vocational boundaries

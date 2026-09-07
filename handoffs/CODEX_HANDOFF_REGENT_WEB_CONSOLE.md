@@ -2,6 +2,25 @@
 
 ## Implementation update — 6 September 2026
 
+The user subsequently authorized a fresh interactive tension test in the console,
+with the human as Regent and separate headless Claude processes for Steward,
+Witness, and Dreamer. The **House test** tab sends exact Regent statements to
+chosen responders. Only the original creation myth and the actual test's shared
+correspondence enter these member contexts; no facilitator interpretation,
+purpose essays, prior test conclusions, or private Codex chat is injected.
+See the console guide for process controls, exact records, and recovery limits.
+This is a development experiment, not canonical birth or a live runtime adapter.
+
+The user subsequently supplied `RegnetConsoleRedesign.zip`. Its console template
+is now integrated: light blue-gray surfaces, local Source Sans 3/IBM Plex Mono,
+collapsible panels, a floating hideable/pinnable dock, compact status, and mobile
+drawers. The user prefers fewer visible notes; details belong in disclosures.
+Original Markdown has a limited safe reading view plus exact source/downloads.
+The ZIP's sample text and copied runtime/access files were not imported. Existing
+history order, shared selection, chat persistence, and tailnet authentication are
+retained. The 50-test suite and expanded Chromium checks pass. See the console
+guide for keyboard controls and rendering limitations.
+
 Subsequent user direction authorized serving the console to their SSH client's
 tailnet. Tailscale Serve now proxies `http://anvil.tail9f1965.ts.net:4311/` to the
 loopback backend. An exact Regent Tailscale login allowlist replaces the need for

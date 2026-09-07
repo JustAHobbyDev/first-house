@@ -16,6 +16,8 @@ interface Message {
   role: "Regent" | "Codex" | "Activity";
   text: string;
   recordId?: string;
+  turnId?: string;
+  itemIds?: string[];
 }
 export interface ConsoleState {
   revision: number;
@@ -210,17 +212,19 @@ export class ConsoleSession {
       this.state.connected = true;
       this.state.busy = false;
       this.state.turnId = null;
-      // Reconcile completed or interrupted turns after browser/backend restart.
-      if (Array.isArray(thread.turns))
+      // Live msg_* IDs can become synthetic item-* IDs in hydrated history.
+      // Match replies within their original user submission/turn, not globally
+      // by provider item ID or by identical text.
+      if (Array.isArray(thread.turns)) {
+        this.reconcileHistory(thread.turns.map(object));
         for (const raw of thread.turns) {
           const turn = object(raw);
-          if (Array.isArray(turn.items))
-            for (const item of turn.items) this.completedItem(object(item));
           if (turn.status === "inProgress") {
             this.state.turnId = string(turn.id);
             this.state.busy = true;
           }
         }
+      }
       this.state.status = this.state.busy
         ? "Stored turn is still running."
         : "Codex connected · separate operator conversation";
@@ -269,6 +273,9 @@ export class ConsoleSession {
         input,
       });
       const turn = object(result.turn);
+      this.state.messages.find((message) => message.id === id)!.turnId = string(
+        turn.id,
+      );
       if (this.state.busy) this.state.turnId = string(turn.id);
       this.save();
     } catch (error) {
@@ -290,30 +297,136 @@ export class ConsoleSession {
     });
   }
 
-  private completedItem(item: ObjectValue) {
+  private reconcileHistory(turns: ObjectValue[]) {
+    const bySubmission = new Map<
+      string,
+      { id: string; agents: ObjectValue[] }
+    >();
+    for (const turn of turns) {
+      const id = string(turn.id);
+      const items = Array.isArray(turn.items) ? turn.items.map(object) : [];
+      const user = items.find(
+        (item) =>
+          item.type === "userMessage" && typeof item.clientId === "string",
+      );
+      const submission =
+        typeof user?.clientId === "string"
+          ? user.clientId
+          : this.state.messages.find(
+              (message) => message.role === "Regent" && message.turnId === id,
+            )?.id;
+      if (submission)
+        bySubmission.set(submission, {
+          id,
+          agents: items.filter((item) => item.type === "agentMessage"),
+        });
+    }
+    const reconciled: Message[] = [];
+    for (let start = 0; start < this.state.messages.length;) {
+      const first = this.state.messages[start]!;
+      if (first.role !== "Regent") {
+        reconciled.push(first);
+        start++;
+        continue;
+      }
+      let end = start + 1;
+      while (
+        end < this.state.messages.length &&
+        this.state.messages[end]!.role !== "Regent"
+      )
+        end++;
+      const group = this.state.messages.slice(start, end);
+      const turn = bySubmission.get(first.id);
+      if (!turn) {
+        reconciled.push(...group);
+        start = end;
+        continue;
+      }
+      first.turnId = turn.id;
+      let index = 0;
+      const reply = (item: ObjectValue, previous?: Message): Message => ({
+        id: previous?.id ?? `${turn.id}/${string(item.id)}`,
+        role: "Codex",
+        text: string(item.text),
+        turnId: turn.id,
+        itemIds: [
+          ...new Set([
+            ...(previous?.itemIds ?? []),
+            ...(previous ? [previous.id] : []),
+            string(item.id),
+          ]),
+        ],
+      });
+      for (const message of group) {
+        if (message.role !== "Codex") {
+          reconciled.push(message);
+          continue;
+        }
+        const item = turn.agents[index];
+        if (item) {
+          reconciled.push(reply(item, message));
+          index++;
+        }
+        // Repair legacy duplicate copies only when this submission's hydrated
+        // history already accounts for the same reply. Keep unmatched material.
+        else if (!turn.agents.some((agent) => agent.text === message.text))
+          reconciled.push(message);
+      }
+      for (const item of turn.agents.slice(index)) reconciled.push(reply(item));
+      start = end;
+    }
+    this.state.messages = reconciled;
+  }
+
+  private findReply(id: string, turnId: string | null) {
+    return this.state.messages.find(
+      (message) =>
+        message.role === "Codex" &&
+        (!message.turnId || message.turnId === turnId) &&
+        (message.id === id || message.itemIds?.includes(id)),
+    );
+  }
+
+  private completedItem(item: ObjectValue, turnId: string | null) {
     if (item.type !== "agentMessage") return;
     const id = string(item.id);
-    const existing = this.state.messages.find((message) => message.id === id);
+    const existing = this.findReply(id, turnId);
     if (existing) existing.text = string(item.text);
     else
-      this.state.messages.push({ id, role: "Codex", text: string(item.text) });
+      this.state.messages.push({
+        id,
+        role: "Codex",
+        text: string(item.text),
+        ...(turnId ? { turnId } : {}),
+      });
   }
 
   private notification(method: string, params: ObjectValue) {
     if (params.threadId !== this.state.threadId) return;
+    const turnId =
+      typeof params.turnId === "string" ? params.turnId : this.state.turnId;
     if (method === "item/agentMessage/delta") {
       const id = string(params.itemId);
-      let message = this.state.messages.find((entry) => entry.id === id);
+      let message = this.findReply(id, turnId);
       if (!message) {
-        message = { id, role: "Codex", text: "" };
+        message = {
+          id,
+          role: "Codex",
+          text: "",
+          ...(turnId ? { turnId } : {}),
+        };
         this.state.messages.push(message);
       }
       message.text += string(params.delta);
     } else if (method === "item/completed")
-      this.completedItem(object(params.item));
+      this.completedItem(object(params.item), turnId);
     else if (method === "turn/started") {
       this.state.busy = true;
       this.state.turnId = string(object(params.turn).id);
+      const user = this.state.messages.findLast(
+        (message) => message.role === "Regent",
+      );
+      if (user && !user.turnId) user.turnId = this.state.turnId;
     } else if (method === "turn/completed") {
       const turn = object(params.turn);
       this.state.busy = false;

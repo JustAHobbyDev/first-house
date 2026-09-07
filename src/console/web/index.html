@@ -5,103 +5,380 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>First House · Regent console</title>
     <link rel="stylesheet" href="/style.css" />
-    <script src="/app.js" defer></script>
+    <script type="module" src="/app.js"></script>
   </head>
   <body>
-    <header>
-      <div>
-        <p class="eyebrow">FIRST HOUSE / DEVELOPMENT</p>
-        <h1>Regent console</h1>
-      </div>
-      <p class="boundary">
-        Live boundary: no House execution attached.<br />Rehearsals complete ·
-        no canonical House has been born.
-      </p>
-    </header>
-    <p id="error" role="alert" hidden></p>
-    <main>
-      <nav aria-label="History">
-        <h2>Recorded history</h2>
-        <label
-          >Find a record<input
+    <h1 class="sr-only">First House · Regent console</h1>
+    <div id="shell" class="shell">
+      <nav
+        id="records-panel"
+        class="records-panel"
+        aria-label="Recorded history"
+      >
+        <div class="panel-heading">
+          <span class="signal" aria-hidden="true"></span
+          ><span class="brand mono">First House</span>
+          <button
+            id="toggle-filters"
+            class="icon-button"
+            title="Find and filter records"
+            aria-label="Find and filter records"
+            aria-expanded="false"
+            aria-controls="filters"
+          >
+            ⌕
+          </button>
+          <button
+            id="toggle-left"
+            class="icon-button"
+            title="Collapse records — F"
+            aria-label="Collapse records"
+            aria-expanded="true"
+            aria-controls="records-panel"
+          >
+            «
+          </button>
+        </div>
+        <div id="filters" class="filters" hidden>
+          <label for="search">Find a record</label
+          ><input
             id="search"
             type="search"
-            placeholder="Title, path, participant…"
-        /></label>
-        <label
-          >Participant history<select id="participant">
+            placeholder="File or participant…"
+          />
+          <label for="participant">Participant history</label
+          ><select id="participant">
             <option value="">Everyone & shared sources</option>
-          </select></label
-        >
-        <p class="muted">
-          Documentary reading order. Parallel contributions have no verified
-          speech order.
-        </p>
-        <div id="history"></div>
+          </select>
+        </div>
+        <div id="history" class="history"></div>
+        <details class="order-note">
+          <summary id="record-count">Documentary reading order</summary>
+          <p>
+            Scene order, followed by supporting files. This is not a strict
+            timeline. Parallel contributions have no verified speech order.
+          </p>
+        </details>
       </nav>
       <section class="reader" aria-label="Original record">
-        <div class="toolbar">
-          <button id="previous">← Previous</button
-          ><button id="next">Next →</button
-          ><label
-            >Text size<select id="size">
-              <option value="normal">Normal</option>
-              <option value="large">Large</option>
-              <option value="larger">Larger</option>
-            </select></label
-          ><button id="download">Download original</button>
-        </div>
-        <p class="eyebrow">READING POSITION / ORIGINAL TEXT</p>
-        <h2 id="title">Loading history…</h2>
-        <p id="metadata" class="muted"></p>
-        <details>
-          <summary>Record reference & provenance</summary>
-          <p id="reference"></p>
-          <p>
-            Participant links follow the earlier documentary reader. They do not
-            establish authorship or recipients. The original text and linked
-            manifests preserve what was recorded; they are not complete
-            invocation contexts.
-          </p>
-          <div id="manifests"></div>
-        </details>
-        <pre id="original"></pre>
-      </section>
-      <section class="conversation" aria-label="Private operator conversation">
-        <div class="toolbar">
-          <h2>Our conversation</h2>
-          <button id="connect">Connect Codex</button>
-        </div>
-        <p class="muted">
-          Private discussion with Codex. A separate thread from the host
-          session. Messages stay outside inhabitants’ correspondence and
-          context.
-        </p>
-        <p id="status" role="status"></p>
-        <p id="thread" class="muted"></p>
+        <main
+          id="reader-scroll"
+          tabindex="0"
+          aria-label="Read the selected original"
+        >
+          <div class="reading-column">
+            <details id="provenance" class="provenance">
+              <summary>
+                <span id="title">Loading history…</span
+                ><span id="archive-label">Host original</span
+                ><span class="provenance-label">provenance ▾</span>
+              </summary>
+              <div class="provenance-body">
+                <p id="metadata"></p>
+                <p id="reference"></p>
+                <p>
+                  History links follow the documentary reader; they do not
+                  establish authorship or recipients. Originals and linked
+                  manifests preserve what was recorded, not complete invocation
+                  contexts.
+                </p>
+                <div id="manifests"></div>
+                <button
+                  id="raw-toggle"
+                  class="text-button"
+                  aria-pressed="false"
+                >
+                  Show source text
+                </button>
+              </div>
+            </details>
+            <article id="reading-text" class="reading-text"></article>
+            <pre id="original" class="original" hidden></pre>
+          </div>
+        </main>
         <div
-          id="messages"
-          aria-live="polite"
-          aria-relevant="additions text"
-        ></div>
+          id="dock"
+          class="dock"
+          role="toolbar"
+          aria-label="Reading controls"
+        >
+          <div class="dock-controls">
+            <button
+              id="open-records"
+              class="icon-button mobile-control"
+              title="Records — F"
+              aria-label="Open records"
+              aria-controls="records-panel"
+            >
+              ☰
+            </button>
+            <button
+              id="previous"
+              class="icon-button"
+              title="Previous record — ←"
+              aria-label="Previous record"
+            >
+              ←
+            </button>
+            <button
+              id="next"
+              class="icon-button"
+              title="Next record — →"
+              aria-label="Next record"
+            >
+              →
+            </button>
+            <span class="divider" aria-hidden="true"></span>
+            <button
+              id="size"
+              class="size-button mono"
+              title="Cycle text size — T"
+              aria-label="Text size: Normal"
+            >
+              Aa <span id="size-label">Normal</span>
+            </button>
+            <button
+              id="download"
+              class="icon-button"
+              title="Download original"
+              aria-label="Download original"
+            >
+              ↓
+            </button>
+            <button
+              id="dock-chat"
+              class="icon-button"
+              title="Chat panel — C"
+              aria-label="Toggle chat panel"
+              aria-expanded="true"
+              aria-controls="conversation"
+            >
+              ◫
+            </button>
+            <span class="divider" aria-hidden="true"></span>
+            <button
+              id="pin-dock"
+              class="icon-button"
+              title="Pin controls open"
+              aria-label="Pin controls open"
+              aria-pressed="false"
+            >
+              ◎
+            </button>
+            <button
+              id="hide-dock"
+              class="icon-button"
+              title="Hide controls — ."
+              aria-label="Hide reading controls"
+            >
+              ⌄
+            </button>
+          </div>
+        </div>
+        <button
+          id="show-dock"
+          class="dock-tab"
+          title="Show controls — ."
+          aria-label="Show reading controls"
+          hidden
+        >
+          ⌃
+        </button>
+      </section>
+      <aside
+        id="conversation"
+        class="conversation"
+        aria-label="Private operator conversation"
+      >
+        <div class="panel-heading">
+          <h2 class="mono">Conversation</h2>
+          <span
+            class="private-note"
+            title="A separate thread from the host session. Messages stay outside inhabitants' correspondence and context."
+            >private to you</span
+          >
+          <button
+            id="toggle-right"
+            class="icon-button"
+            title="Collapse chat — C"
+            aria-label="Collapse chat"
+            aria-expanded="true"
+            aria-controls="conversation"
+          >
+            »
+          </button>
+        </div>
+        <div id="conversation-tabs" class="conversation-tabs" hidden>
+          <button id="private-tab" aria-pressed="true">Private Codex</button>
+          <button id="house-tab" aria-pressed="false">House test</button>
+        </div>
+        <section id="house-panel" hidden aria-label="Interactive House test">
+          <div class="house-toolbar">
+            <span id="house-status" role="status"></span>
+            <button id="house-start" class="text-button">Start members</button>
+            <button id="house-stop" class="text-button" disabled>Stop</button>
+          </div>
+          <details class="house-details">
+            <summary>Context and participants</summary>
+            <p>
+              Fictional development test · original creation myth (DRAFT /
+              UNRATIFIED). All test messages are shared. Selected archive
+              records and private Codex chat are not sent.
+            </p>
+            <ul id="house-members"></ul>
+            <button id="house-context" class="text-button">
+              Download exact source
+            </button>
+          </details>
+          <div
+            id="house-messages"
+            aria-live="polite"
+            aria-relevant="additions text"
+          ></div>
+          <form id="house-composer">
+            <label for="house-recipient">Responders</label>
+            <select id="house-recipient">
+              <option value="all">All members</option>
+              <option>Steward</option>
+              <option>Witness</option>
+              <option>Dreamer</option>
+            </select>
+            <label class="sr-only" for="house-message"
+              >Regent message to the House</label
+            >
+            <textarea
+              id="house-message"
+              rows="4"
+              maxlength="32000"
+              placeholder="Speak as Regent…"
+            ></textarea>
+            <div class="composer-footer">
+              <span class="muted">Shared with the House</span>
+              <button
+                id="house-send"
+                class="send-button"
+                type="submit"
+                title="Send · Ctrl/⌘ Enter"
+                disabled
+              >
+                Send ↑
+              </button>
+            </div>
+          </form>
+        </section>
+        <div id="private-body" class="chat-body">
+          <div id="chat-intro" class="chat-intro">
+            <p>Read the history together.</p>
+            <p class="muted">
+              Start or resume your private operator conversation. Sending
+              attaches the selected original.
+            </p>
+          </div>
+          <button id="connect" class="connect-button">Connect Codex</button>
+          <div
+            id="messages"
+            aria-live="polite"
+            aria-relevant="additions text"
+          ></div>
+        </div>
         <form id="composer">
-          <label for="message">Message to Codex</label
-          ><textarea
+          <label class="sr-only" for="message">Message to Codex</label>
+          <textarea
             id="message"
             rows="4"
             maxlength="32000"
             placeholder="Ask about the record we’re reading…"
           ></textarea>
-          <p id="attachment" class="muted"></p>
-          <div class="toolbar">
-            <button id="send" type="submit" disabled>
-              Send with selected original</button
-            ><button id="interrupt" type="button" disabled>
-              Stop response
+          <div class="composer-footer">
+            <p id="attachment"></p>
+            <button
+              id="interrupt"
+              class="text-button"
+              type="button"
+              title="Stop response"
+              disabled
+            >
+              Stop</button
+            ><button
+              id="send"
+              class="send-button"
+              type="submit"
+              title="Send with selected original · Ctrl/⌘ Enter"
+              disabled
+            >
+              Send ↑
             </button>
           </div>
         </form>
-      </section>
-    </main>
+      </aside>
+      <footer class="statusbar">
+        <span
+          class="house-status"
+          title="Live boundary: no House execution attached. Rehearsals complete. No canonical House has been born."
+          ><span class="signal" aria-hidden="true"></span
+          ><span>Regent · no House attached</span></span
+        >
+        <span class="status-divider" aria-hidden="true">/</span
+        ><span id="status" role="status">Reader ready</span>
+        <span class="status-divider" aria-hidden="true">/</span
+        ><span id="thread"></span>
+        <button
+          id="error-toggle"
+          class="error-toggle"
+          aria-controls="error-panel"
+          aria-expanded="false"
+          hidden
+        >
+          Connection notice
+        </button>
+      </footer>
+      <div id="error-panel" class="error-panel" hidden>
+        <p id="error" role="alert"></p>
+        <button id="dismiss-error" class="text-button">Dismiss</button>
+      </div>
+      <button
+        id="scrim"
+        class="scrim"
+        aria-label="Close side panel"
+        hidden
+      ></button>
+    </div>
+    <dialog id="shortcuts" class="shortcuts" aria-labelledby="shortcuts-title">
+      <div class="shortcuts-heading">
+        <h2 id="shortcuts-title">Keyboard shortcuts</h2>
+        <button
+          id="close-shortcuts"
+          class="icon-button"
+          aria-label="Close keyboard shortcuts"
+          autofocus
+        >
+          ×
+        </button>
+      </div>
+      <dl>
+        <dt><kbd>?</kbd></dt>
+        <dd>Show / hide shortcuts</dd>
+        <dt><kbd>F</kbd></dt>
+        <dd>Toggle records</dd>
+        <dt><kbd>C</kbd></dt>
+        <dd>Toggle chat</dd>
+        <dt><kbd>←</kbd> <kbd>→</kbd></dt>
+        <dd>Previous / next record</dd>
+        <dt><kbd>T</kbd></dt>
+        <dd>Cycle text size</dd>
+        <dt><kbd>.</kbd></dt>
+        <dd>Show / hide reading controls</dd>
+        <dt><kbd>Esc</kbd></dt>
+        <dd>Close shortcuts or mobile drawer</dd>
+      </dl>
+      <p class="muted">Navigation shortcuts work outside text inputs.</p>
+      <h3>In the message box</h3>
+      <dl>
+        <dt><kbd>Ctrl</kbd> / <kbd>⌘</kbd> + <kbd>Enter</kbd></dt>
+        <dd>Send message</dd>
+        <dt><kbd>Enter</kbd></dt>
+        <dd>New line</dd>
+      </dl>
+    </dialog>
   </body>
 </html>
